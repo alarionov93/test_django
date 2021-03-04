@@ -6,12 +6,25 @@ from django.urls import reverse
 # Create your views here.
 
 
-def index(request):
-  _id = request.GET.get('reg_success', None)
-  if _id is not None: 
+def index(request, reg_success=None):
+  # _id = request.GET.get('param1', None) # 'val1'
+  if reg_success is not None: 
 	# return HttpResponse(json.dumps({'a': 'b'}), content_type='application/json')
-    
-    return render(request, template_name='index.html', context={ "reg_success":_id, "test_list": [1,2,3,54] })
+    ctx = { 
+      "reg_success": reg_success,
+      "test_list": [
+        {
+          "aaa": "asdfh",
+        },
+        {
+          "aaa": "agfgsdf",
+        },
+        {
+          "aaa": "asfgrbhjhmfj",
+        }
+      ]
+    }
+    return render(request, template_name='index.html', context=ctx)
   
 
-  return redirect(to=reverse('r_site_index') + '?reg_success=1')
+  return redirect(to=reverse('r_site_index', args=(1,)))
