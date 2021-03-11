@@ -3,6 +3,7 @@ import json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.urls import reverse
+from . import models
 # Create your views here.
 
 
@@ -10,6 +11,7 @@ def index(request, reg_success=None):
   # _id = request.GET.get('param1', None) # 'val1'
   if reg_success is not None: 
 	# return HttpResponse(json.dumps({'a': 'b'}), content_type='application/json')
+    book_model = models.Book
     ctx = { 
       "reg_success": reg_success,
       "test_list": [
