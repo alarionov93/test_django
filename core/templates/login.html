@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+  <p>Hello!</p>
+  {% if request.user.is_authenticated %}
+    <p>Вы уже влогинены!</p>
+  {% else %}
+    <p>Login form</p>
+    <div>
+      {% if error %}
+      <p class="text-danger">{{ error }}</p>
+      {% endif %}
+      <form action="{% url 'site_login' %}" method="POST">
+        {% csrf_token %}
+        <input type="email" name="email" value="">
+        <input type="password" name="password" value="">
+        <input type="submit" name="submit">
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  <script type="text/javascript">
+    // document.getElementById("id_test").innerText = "Hello from JS";
+    console.log("hello~!");
+  </script>
+{% endblock %}
+
+{% block title %}
+  I'm index page!
+{% endblock %}

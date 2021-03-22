@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post" class="form">
+	{% csrf_token %}
+	{% if form.errors %}
+	  <p class="text-danger">Проверьте форму на наличие ошибок заполнения.</p>
+	{% endif %}
+	{{ form }}
+	    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+	      Зарегистрироваться
+	    </button>
+</form>
+
+{% endblock %}

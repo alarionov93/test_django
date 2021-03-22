@@ -8,6 +8,12 @@
   </title>
 </head>
 <body>
+	{% if request.user.is_authenticated %}
+		<p>Вы уже влогинены как {{ request.user.full_name }}</p>
+		<a href="{% url 'site_logout' %}?path={{ request.path }}">Выйти</a>
+	{% else %}
+		<a href="{% url 'site_login' %}">Войти</a>
+	{% endif %}
     {% block content %}
     {% endblock %}
 

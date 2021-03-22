@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+  <p>Books list:</p>
+  {% for book in books %}
+    <span>{{ book.name }}</span>
+    <span>{{ book.publisher }}</span>
+    <span>{{ book.date_of_publication }}</span>
+    {# comment #}
+    {% for author in book.authors %}
+      <span>{{ author }}</span>
+    {% endfor %}
+    {# endcomment #}
+  {% endfor %}
+{% endblock %}
+
+{% block scripts %}
+  <script type="text/javascript">
+    // document.getElementById("id_test").innerText = "Hello from JS";
+    console.log("books page~!");
+  </script>
+{% endblock %}
+
+{% block title %}
+  Books page!
+{% endblock %}
