@@ -5,11 +5,12 @@ base_v=v0.0.
 git add *
 echo -n "Enter commit msg and press [ENTER]: "
 read msg
-git commit -a -m "$msg ..and fix some \U0001f4a9"
-echo "..and fix some \U0001f4a9"
+git commit -a -m "$msg"
+echo "..and fix some \xf0\x9f\x92\xa9"
 git push
 ver_num=$(cat version.txt | tail -1)
 git tag "$base_v"$((ver_num+1))
+git push --tags
 echo $((ver_num+1))\r\n >> version.txt
-echo '\U0001f918'
-echo '\U0001f37a'
+echo '\xf0\x9f\xa4\x98'
+echo '\xf0\x9f\x8d\xba'
