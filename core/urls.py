@@ -9,4 +9,5 @@ urlpatterns = [
 	path('books/', views.books, name='site_books'),
 	path('logout/', views.logout, name='site_logout'),
 	path('register/', views.register, name='site_register'),
+	path('books/<int:book_id>/star/', views.StarBook.as_view(), name='star_book'),
 ]

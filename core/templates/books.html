@@ -4,9 +4,17 @@
 {% block content %}
   <p>Books list:</p>
   {% for book in books %}
+  <div>
     <span>{{ book.name }}</span>
     <span>{{ book.publisher }}</span>
     <span>{{ book.date_of_publication }}</span>
+    <!-- TODO: add book check if it is starred and add user data -->
+    <form action="" method="post">
+        {% csrf_token %}
+        <!-- <input type="hidden" name="" value> -->
+        <button>Add</button> <!-- TODO: add event handler -->
+    </form>
+  </div>
     {# comment #}
     {% for author in book.authors %}
       <span>{{ author }}</span>

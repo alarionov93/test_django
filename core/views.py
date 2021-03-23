@@ -1,12 +1,19 @@
 import json
+import traceback
 
-from django.shortcuts import render, redirect
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.urls import reverse
 from . import models
 from . import forms
+from .mixins import JSONResponseMixin
 from django.contrib.auth import authenticate, login as sign_in, logout as sign_out
 from django.contrib.auth.decorators import login_required
+from django.views.generic import View, CreateView, UpdateView, DetailView
+from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured, MultipleObjectsReturned
 # Create your views here.
 
 
@@ -68,3 +75,64 @@ def books(request):
 	ctx.update({ 'books': [ b.to_json() for b in models.Book.objects.all() ] })
 
 	return render(request, template_name='books.html', context=ctx)
+
+# user, book
+# TODO: implement method decorator as a auth mixin
+# @method_decorator(, na)
+class StarBook(CreateView, JSONResponseMixin):
+
+	model = models.BookStar
+	fields = ['book', 'user']
+	book = None
+
+	# request handling, parsing url params, etc.
+	def dispatch(self, request, *args, **kwargs):
+		print('dispatch') # print method name to show invoking order
+		# print(request.GET)
+		book_id = kwargs.get('book_id', None)
+		if book_id is not None:
+			self.book = get_object_or_404(
+	            models.Book,
+	            id=book_id
+	        )
+
+		return super(StarBook, self).dispatch(request)
+
+	# prepare data for context to be passed to response
+	def get_context_data(self, **kwargs):
+		print('get_context_data')
+		ctx = super(StarBook, self).get_context_data()
+
+		return ctx
+
+	# process GET request
+	def get(self, request, *args, **kwargs):
+		print('get')
+		# here 
+		if not self.request.is_ajax(): # deprecated since 3.1 !
+			return HttpResponse(json.dumps({"Error": "Should be ajax"}), status=405)
+
+		return super(StarBook, self).get(request)
+
+	# process POST and PUT request
+	def post(self, request, *args, **kwargs):
+		print('post')
+		super(StarBook, self).post(request)
+		user_id = self.request.POST.get('user_id', None)
+		try:
+			# user = self.request.user
+			user = models.User.objects.get(pk=user_id)
+			if self.book and user:
+				self.object = models.BookStar.objects.create(book=self.book, user=user)
+				# print(self.book)
+				# print(user)
+			else:
+				raise ValueError("Book or user is None!")
+		except models.User.DoesNotExist:
+			print("User with specified id not found")
+		except Exception as e:
+			print(traceback.format_exception(None, e, e.__traceback__))
+
+		return HttpResponse(json.dumps({'created_with_id': self.object.id}), content_type='application/json')
+
+

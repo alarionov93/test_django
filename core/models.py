@@ -59,6 +59,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 	USERNAME_FIELD = 'email'
 	REQUIRED_FIELDS = []
 
+	def starred_books(self):
+		pass
+
 	def __str__(self):
 		if self.ex_name is not None:
 			return "%s (known as %s)." % (self.name, self.ex_name)
@@ -94,6 +97,10 @@ class Book(models.Model):
 	publisher = models.ForeignKey('Publisher', db_column='publisher_id', to_field='id', on_delete=models.CASCADE)
 	authors = models.ManyToManyField('User', through='AuthorBook')
 
+	@property
+	def starred(self):
+		pass
+
 	def to_json(self):
 		book_obj = {}
 		if not self.id:
@@ -102,8 +109,10 @@ class Book(models.Model):
 		book_obj.update({'name': self.name})
 		book_obj.update({'publisher': self.publisher})
 		book_obj.update({'date_of_publication': self.date_of_publication})
-		book_obj.update({'authors': [ a.__str__() for a in self.authors.all() ]})
-
+		if len(self.authors.all()) > 0:
+			book_obj.update({'authors': [ a.__str__() for a in self.authors.all() ]})
+		else:
+			book_obj.update({'authors': []})
 		return book_obj
 
 	@property
@@ -119,3 +128,17 @@ class Book(models.Model):
 		db_table = 'books'
 
 
+class BookStar(models.Model):
+	user = models.ForeignKey('User', to_field='id', on_delete=models.CASCADE, db_column='user_id', null=False, blank=False, unique=False)
+	book = models.ForeignKey('Book', to_field='id', on_delete=models.CASCADE, db_column='book_id', null=False, blank=False, unique=False)
+
+	def save(self, *args, **kwargs):
+		# if self.author.type_of != USER_TYPE_AUTHOR:
+			# raise ValueError("Author has wrong type_of field value!")
+
+		return super(BookStar, self).save(*args, **kwargs)
+
+	class Meta:
+		db_table = 'starred_books'
+
+		
