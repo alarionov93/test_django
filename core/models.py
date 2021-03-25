@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import pytz
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ImproperlyConfigured
-# from django.db.models import Q
+from django.db.models import Q
 from django.db.utils import IntegrityError
 
 # Create your models here.
@@ -99,7 +99,9 @@ class Book(models.Model):
 
 	@property
 	def starred(self):
-		pass
+		if not self.id:
+			return False
+		return BookStar.objects.filter(book__id=self.id).exists()
 
 	def to_json(self):
 		book_obj = {}
@@ -113,14 +115,18 @@ class Book(models.Model):
 			book_obj.update({'authors': [ a.__str__() for a in self.authors.all() ]})
 		else:
 			book_obj.update({'authors': []})
+		book_obj.update({'starred': self.starred})
+
 		return book_obj
 
-	@property
 	def published_recently(self):
-		return self.date_of_publication >= timezone.now() - datetime.timedelta(days=1)
+		return self.date_of_publication >= (timezone.now() - timedelta(days=1)).date()
 
 	def __str__(self):
-		authors = '; '.join([x.__str__() for x in self.authors.all()])
+		if len(self.authors.all()) > 0:
+			authors = '; '.join([x.__str__() for x in self.authors.all()])
+		else:
+			authors = []
 		return "Name: %s, published: %s, by %s, from %s" % (self.name, self.date_of_publication, authors, self.publisher)
 
 
@@ -136,9 +142,18 @@ class BookStar(models.Model):
 		# if self.author.type_of != USER_TYPE_AUTHOR:
 			# raise ValueError("Author has wrong type_of field value!")
 
+		# try:
+		# 	book_exists = BookStar.objects.get(Q(book__id=self.book.id) & Q(user__id=self.user.id))
+		# 	if book_exists:
+		# 		raise ValueError("Star already persists!")
+		# except MultipleObjectsReturned as e:
+		# 	print("Error in DB! Params: %s" % (self.book.id, self.user.id))
+		# except DoesNotExist as e:
+		# 	pass	
 		return super(BookStar, self).save(*args, **kwargs)
+
 
 	class Meta:
 		db_table = 'starred_books'
+		unique_together = ('book_id', 'user_id')
 
-		

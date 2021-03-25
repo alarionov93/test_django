@@ -12,8 +12,9 @@ from . import forms
 from .mixins import JSONResponseMixin
 from django.contrib.auth import authenticate, login as sign_in, logout as sign_out
 from django.contrib.auth.decorators import login_required
-from django.views.generic import View, CreateView, UpdateView, DetailView
+from django.views.generic import View, CreateView, UpdateView, ListView, DetailView
 from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured, MultipleObjectsReturned
+from django.db.utils import IntegrityError
 # Create your views here.
 
 
@@ -76,6 +77,14 @@ def books(request):
 
 	return render(request, template_name='books.html', context=ctx)
 
+
+@method_decorator(login_required(login_url='/login/'), name='dispatch')
+class RecentBooks(ListView):
+    context_object_name = 'books'
+    template_name = 'books.html'
+    queryset = [obj for obj in models.Book.objects.all() if obj.published_recently is True]
+
+
 # user, book
 # TODO: implement method decorator as a auth mixin
 # @method_decorator(, na)
@@ -119,13 +128,20 @@ class StarBook(CreateView, JSONResponseMixin):
 		print('post')
 		super(StarBook, self).post(request)
 		user_id = self.request.POST.get('user_id', None)
+		ctx = {}
 		try:
 			# user = self.request.user
 			user = models.User.objects.get(pk=user_id)
 			if self.book and user:
-				self.object = models.BookStar.objects.create(book=self.book, user=user)
+				try:
+					self.object = models.BookStar.objects.create(book=self.book, user=user)
+				except IntegrityError as e:
+
+					print("Book Star is already persists in DB!")
+					ctx.update({'not_created_reason': 'already persists in db'})
 				# print(self.book)
 				# print(user)
+				ctx.update({'created_with_id': self.object.id})
 			else:
 				raise ValueError("Book or user is None!")
 		except models.User.DoesNotExist:
@@ -133,6 +149,6 @@ class StarBook(CreateView, JSONResponseMixin):
 		except Exception as e:
 			print(traceback.format_exception(None, e, e.__traceback__))
 
-		return HttpResponse(json.dumps({'created_with_id': self.object.id}), content_type='application/json')
+		return HttpResponse(json.dumps(ctx), content_type='application/json')
 
 

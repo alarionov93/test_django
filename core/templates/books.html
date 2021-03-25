@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 
 {% block content %}
   <p>Books list:</p>
@@ -8,22 +8,27 @@
     <span>{{ book.name }}</span>
     <span>{{ book.publisher }}</span>
     <span>{{ book.date_of_publication }}</span>
+    {% if book.published_recently %}
+      <p>aaa</p>
+    {% endif %}
     <!-- TODO: add book check if it is starred and add user data -->
-    <form action="" method="post">
+    {% if book.starred %}
+      <form action="" method="post">
         {% csrf_token %}
-        <!-- <input type="hidden" name="" value> -->
-        <button>Add</button> <!-- TODO: add event handler -->
-    </form>
+        <i class="fa fa-star" aria-hidden="true"></i>
+      </form>
+    {% else %}
+      <form action="" method="post">
+          {% csrf_token %}
+          <i class="fa fa-star-o" aria-hidden="true"></i> <!-- TODO: add event handler -->
+      </form>
+    {% endif %}
   </div>
-    {# comment #}
-    {% for author in book.authors %}
-      <span>{{ author }}</span>
-    {% endfor %}
-    {# endcomment #}
   {% endfor %}
 {% endblock %}
 
 {% block scripts %}
+  <script type="text/javascript" src="{% static 'jquery.js' %}"></script>
   <script type="text/javascript">
     // document.getElementById("id_test").innerText = "Hello from JS";
     console.log("books page~!");
