@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'core',
 ]
 
@@ -113,6 +114,18 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'core.User'
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
+    # 'DEFAULT_PAGINATION_CLASS':('rest_framework.pagination.LimitOffsetPagination',),
+    # 'PAGE_SIZE': 10
+    # 'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework.authentication.BasicAuthentication',
+    #     'rest_framework.authentication.SessionAuthentication',
+    # ),
+}
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -131,3 +144,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(os.path.abspath(BASE_DIR), 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(os.path.abspath(BASE_DIR), 'media')
+
+
