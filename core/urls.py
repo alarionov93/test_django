@@ -13,4 +13,5 @@ urlpatterns = [
 	path('logout/', views.logout, name='site_logout'),
 	path('register/', views.register, name='site_register'),
 	path('books/<int:book_id>/star/', views.StarBook.as_view(), name='star_book'),
+	path('certs/', views.certificate, name='сertificate'),
 ] + static(dev_settings.STATIC_URL, document_root=dev_settings.STATIC_URL)

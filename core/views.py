@@ -1,5 +1,9 @@
 import json
 import traceback
+import hashlib
+import xlrd
+import base64
+import urllib
 
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
@@ -7,6 +11,7 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.urls import reverse
+
 from . import models
 from . import forms
 from .mixins import JSONResponseMixin
@@ -62,10 +67,75 @@ def logout(request):
 	return redirect(to=path)
 
 
-def index(request, reg_success=None):
-  # import pdb
-  # pdb.set_trace()
+def calc_uuid(fio, phone):
+	# hashlib.sha256().update().hexdigest() # UID
+	# import pdb
+	# pdb.set_trace()
+	res = [x for x in str(base64.b64encode(b'%s^%s' 
+		% (
+			bytes(str(fio), encoding='utf-8'),
+			bytes(str(phone), encoding='utf-8')
+		)
+	))]
+	return ''.join(res[2:len(res)-1])
+
+
+def get_names(file):
+	# Table:
+	# |         0          |           1          |
+	# |        FIO         |     +79660123456     |
+	try:
+		idx = 0
+		names = []
+		wb = xlrd.open_workbook(file_contents=file.file.read(), on_demand = True)
+		wb_first_sheet = wb.sheet_by_index(idx)
+		for r in range(wb_first_sheet.nrows):
+			fio = wb_first_sheet.cell_value(r,0) # FIO
+			phone = wb_first_sheet.cell_value(r,1) # Phone
+			names.append({
+				'fio': fio,
+				'phone': phone
+			})
+
+		return names
+	except FileNotFoundError as e:
+		print("File not found!")
+	except IndexError as e:
+		print("Can not get sheet with specified index %s" % idx)
+	except TypeError as e:
+		print("File contents of %s has wrong type" % file)
+		print(traceback.format_exception(None, e, e.__traceback__))
+	except Exception as e:
+	# except AttributeError!!
+		print(traceback.format_exception(None, e, e.__traceback__))
+	finally:
+		if 'wb' in locals():
+			wb.release_resources()
+			del wb
+
+
+def index(request):
 	ctx = {}
+  	
+	if request.method == 'POST':
+  		# upload file and render list with links
+  		# filename = request.FILES
+		# print(request.FILES)
+		# import pdb
+		# pdb.set_trace()
+		# for name_data in names:
+			# calc_uuid(name_data['fio'], name_data['phone'])
+		try:
+			ctx.update({'cert_links': 
+				[{'link': 'certs/?id=%s' % calc_uuid(x['fio'], x['phone']), 'name': x['fio']} for x in get_names(request.FILES.get('children_data', None))]
+				})
+		except xlrd.biffh.XLRDError:
+			ctx = {'error': "File must be XLS!"}
+		# for idx, file in request.FILES.items():
+			# names = get_names(file)
+	else:
+		# ctx.update({'cert_links': []})
+		pass
 
 	return render(request, template_name='index.html', context=ctx)
 
@@ -77,6 +147,22 @@ def books(request):
 
 	return render(request, template_name='books.html', context=ctx)
 
+def certificate(request):
+	ctx = {}
+	cert_encoded = None
+	try:
+		cert_encoded = request.get_full_path().split('id=')[1]
+	except IndexError:
+		print("Missing id of cert!")
+	if cert_encoded is not None:
+		# import pdb
+		# pdb.set_trace()
+		# res = [x for x in str(base64.b64decode(bytes(cert_encoded, encoding='utf-8')))]
+		ctx.update({'cert_id': cert_encoded})
+		ctx.update({'cert_name': base64.b64decode(cert_encoded).decode('utf-8').split("^")[0]})
+		ctx.update({'cert_phone': base64.b64decode(cert_encoded).decode('utf-8').split("^")[1]})
+
+	return render(request, template_name='certificate.html', context=ctx)
 
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 class RecentBooks(ListView):

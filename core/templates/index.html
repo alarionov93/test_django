@@ -2,31 +2,27 @@
 
 
 {% block content %}
-  <p>Hello!</p>
-  {% if reg_success %}
-    {% for val in test_list %}
-      {% if forloop.first %}
-        <div style="color:red;">
-      {% elif forloop.last %}
-        <div style="text-decoration: underline;">
-      {% else %}
-        <div>
-      {% endif %}
-        {% if val.aaa %}
-          {{ val.aaa }} : {{ val.aaa |  length }}
-        {% else %}
-          <p>empty</p>
-        {% endif %}
-      </div>
+  {% if error %}
+    <p style="color:red;">{{ error }}</p>
+  {% endif %}
+  {% if cert_links %}
+    {% for link in cert_links %}
+      <p><a href="{{ link.link }}">{{link.name}}</a></p>
+    {% empty %}
+      <p>No links!</p>
     {% endfor %}
   {% endif %}
+  <form enctype="multipart/form-data" method="post">
+     <p>Прикрепить файл</p>
+     {% csrf_token %}
+     <p><input type="file" name="children_data" accept="application/vnd.ms-excel,application/msexcel,application/x-msexcel,application/x-ms-excel,application/x-excel,application/x-dos_ms_excel,application/xls,application/x-xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+     <input type="submit" value="Отправить"></p>
+  </form>
+
 {% endblock %}
 
 {% block scripts %}
-  <script type="text/javascript">
-    // document.getElementById("id_test").innerText = "Hello from JS";
-    console.log("hello~!");
-  </script>
+  
 {% endblock %}
 
 {% block title %}

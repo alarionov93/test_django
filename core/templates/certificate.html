@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <h1>Cert page</h1>
+  <p>Сертификат {{ cert_name }}</p>
+  <p>Сертификат {{ cert_id }}</p>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block title %}
+  Сертификат {{ cert_name }}
+{% endblock %}
